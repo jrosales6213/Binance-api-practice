@@ -1,30 +1,48 @@
-const express = require('express');
-const {google} = require('googleapis');
-const { async } = require('q');
+const express = require("express");
+const { google } = require("googleapis");
 
 const app = express();
+app.set("view engine", "ejs");
+app.use(express.urlencoded({ extended: true }));
 
-app.get('/', async (req, res) => {
-    
-    const auth = new google.auth.GoogleAuth({
-        keyFile : "credentials.json",
-        scopes : 'https://www.googleapis.com/auth/speadsheets',
-    });
+// app.get("/", (req, res) => {
+//   res.render("index");
+// });
 
-    //create client instance for auth
-    const client = await auth.getClient();
+app.get("/", async (req, res) => {
+ 
 
-    //Instance of googlesheet api
-    const googleSheets = google.sheets({version : 'v4', auth: client});
+  const auth = new google.auth.GoogleAuth({
+    keyFile: "credentials.json",
+    scopes: "https://www.googleapis.com/auth/spreadsheets",
+  });
 
-    const speadsheetID = '1lzD6t-idEpmq6VVLKr1E3csuc9vc-vkPD3psr7VDJpY';
+  // Create client instance for auth
+  const client = await auth.getClient();
 
-    //get metadata about speadsheet
-    const metaData = await googleSheets.spreadsheets.get({
-        auth, 
-        speadsheetID,
-    })
-    res.send(metaData);
+  // Instance of Google Sheets API
+  const googleSheets = google.sheets({ version: "v4", auth: client });
+
+  const spreadsheetId = "1lzD6t-idEpmq6VVLKr1E3csuc9vc-vkPD3psr7VDJpY";
+
+  // Read rows from spreadsheet
+  const getRows = await googleSheets.spreadsheets.values.get({
+    auth,
+    spreadsheetId,
+    range: "Sheet2!A:E",
+  });
+
+  // Write row(s) to spreadsheet
+//   await googleSheets.spreadsheets.values.append({
+//     auth,
+//     spreadsheetId,
+//     range: "Sheet1!A:B",
+//     valueInputOption: "USER_ENTERED",
+//     resource: {
+//       values: [[request, name]],
+//     },
+//   });
+  res.send(console.log(getRows.data.values));
 });
 
-app.listen(3000, (req, res) => console.log('running on port 3000'));
+app.listen(3000, (req, res) => console.log("running on 3000"));
